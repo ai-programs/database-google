@@ -1,16 +1,16 @@
 :root {
-  color-scheme: dark;
-  --bg: #10131a;
-  --panel: #181d28;
-  --panel-soft: #202737;
-  --text: #f6f1e8;
-  --muted: #a8b0c0;
-  --accent: #f6b44b;
-  --accent-dark: #9f5f12;
-  --danger: #f36f6f;
-  --border: rgba(255, 255, 255, 0.1);
+  color-scheme: light;
+  --bg: #ffffff;
+  --panel: #ffffff;
+  --panel-soft: #f7f7f7;
+  --text: #0a0a0a;
+  --muted: #666666;
+  --accent: #0a0a0a;
+  --accent-dark: #000000;
+  --danger: #0a0a0a;
+  --border: #e5e5e5;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;
+    "Roboto", "Segoe UI", sans-serif;
 }
 
 * {
@@ -20,9 +20,7 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top left, rgba(246, 180, 75, 0.2), transparent 34rem),
-    linear-gradient(135deg, #10131a 0%, #111827 48%, #1b1423 100%);
+  background: var(--bg);
   color: var(--text);
 }
 
@@ -32,31 +30,37 @@ input {
 }
 
 button {
-  border: 0;
-  border-radius: 999px;
+  border: 1px solid var(--text);
+  border-radius: 10px;
   background: var(--accent);
-  color: #1c1204;
+  color: var(--bg);
   cursor: pointer;
-  font-weight: 800;
-  padding: 0.85rem 1.2rem;
-  transition: transform 160ms ease, background 160ms ease;
+  font-weight: 700;
+  padding: 0.8rem 1rem;
+  transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
 }
 
 button:hover,
 button:focus-visible {
-  background: #ffd17f;
-  transform: translateY(-1px);
+  background: var(--bg);
+  color: var(--text);
 }
 
 button.secondary {
-  background: var(--panel-soft);
+  background: var(--bg);
   color: var(--text);
   border: 1px solid var(--border);
 }
 
+button.secondary:hover,
+button.secondary:focus-visible {
+  border-color: var(--text);
+}
+
 button.danger {
-  color: #2b0808;
-  background: var(--danger);
+  color: var(--text);
+  background: var(--bg);
+  border-color: var(--border);
 }
 
 button:disabled {
@@ -81,9 +85,9 @@ button:disabled {
 .login-card {
   width: min(720px, 100%);
   border: 1px solid var(--border);
-  border-radius: 34px;
-  background: rgba(24, 29, 40, 0.86);
-  box-shadow: 0 24px 90px rgba(0, 0, 0, 0.34);
+  border-radius: 18px;
+  background: var(--panel);
+  box-shadow: none;
   overflow: hidden;
   padding: clamp(2rem, 8vw, 4rem);
 }
@@ -116,9 +120,9 @@ button:disabled {
   gap: 1rem;
   grid-template-columns: auto 1fr auto;
   border: 1px solid var(--border);
-  border-radius: 26px;
-  background: rgba(16, 19, 26, 0.84);
-  backdrop-filter: blur(18px);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(14px);
   margin-bottom: 1.25rem;
   padding: 0.75rem;
 }
@@ -132,7 +136,7 @@ button:disabled {
 
 .brand:hover,
 .brand:focus-visible {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--panel-soft);
 }
 
 .app-nav {
@@ -178,10 +182,8 @@ button.small {
 .welcome-panel,
 .page-heading {
   border: 1px solid var(--border);
-  border-radius: 34px;
-  background:
-    linear-gradient(135deg, rgba(246, 180, 75, 0.16), transparent 40%),
-    rgba(24, 29, 40, 0.76);
+  border-radius: 18px;
+  background: var(--panel);
   margin-bottom: 1rem;
   padding: clamp(1.5rem, 5vw, 3rem);
 }
@@ -210,8 +212,8 @@ button.small {
 
 .stat-card {
   border: 1px solid var(--border);
-  border-radius: 26px;
-  background: rgba(24, 29, 40, 0.82);
+  border-radius: 16px;
+  background: var(--panel);
   padding: 1.25rem;
 }
 
@@ -245,7 +247,7 @@ button.small {
 .eyebrow {
   color: var(--accent);
   font-size: 0.8rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.16em;
   margin: 0 0 0.75rem;
   text-transform: uppercase;
@@ -259,8 +261,8 @@ p {
 
 h1 {
   font-size: clamp(2.5rem, 9vw, 6rem);
-  letter-spacing: -0.08em;
-  line-height: 0.92;
+  letter-spacing: -0.07em;
+  line-height: 0.96;
   max-width: 780px;
   margin-bottom: 1rem;
 }
@@ -287,16 +289,16 @@ h2 {
 .search-form input {
   width: 100%;
   border: 1px solid var(--border);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: var(--bg);
   color: var(--text);
   outline: none;
   padding: 0.95rem 1.2rem;
 }
 
 .search-form input:focus {
-  border-color: rgba(246, 180, 75, 0.8);
-  box-shadow: 0 0 0 4px rgba(246, 180, 75, 0.16);
+  border-color: var(--text);
+  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.08);
 }
 
 .search-form.compact {
@@ -317,9 +319,9 @@ h2 {
 
 .panel {
   border: 1px solid var(--border);
-  border-radius: 28px;
-  background: rgba(24, 29, 40, 0.82);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.24);
+  border-radius: 16px;
+  background: var(--panel);
+  box-shadow: none;
   padding: 1.25rem;
 }
 
@@ -350,7 +352,7 @@ h2 {
 .person-card,
 .comparison-summary {
   border: 1px solid var(--border);
-  border-radius: 22px;
+  border-radius: 14px;
   background: var(--panel-soft);
   overflow: hidden;
 }
@@ -362,7 +364,7 @@ h2 {
 
 .poster {
   aspect-ratio: 2 / 3;
-  background: #0c0f16;
+  background: #eeeeee;
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -410,7 +412,7 @@ h2 {
 }
 
 .watchlist-item .poster {
-  border-radius: 14px;
+  border-radius: 10px;
 }
 
 .watchlist-details {
@@ -432,7 +434,7 @@ h2 {
 
 .empty-state {
   border: 1px dashed var(--border);
-  border-radius: 20px;
+  border-radius: 14px;
   padding: 1rem;
   text-align: center;
 }
@@ -450,7 +452,7 @@ h2 {
 }
 
 .person-card.active {
-  border-color: rgba(246, 180, 75, 0.8);
+  border-color: var(--text);
 }
 
 .person-main {
@@ -465,7 +467,7 @@ h2 {
   height: 46px;
   border-radius: 50%;
   background: var(--accent);
-  color: #1c1204;
+  color: var(--bg);
   display: grid;
   flex: 0 0 auto;
   font-weight: 900;

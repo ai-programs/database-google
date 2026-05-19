@@ -84,16 +84,23 @@ button:disabled {
   border-radius: 34px;
   background: rgba(24, 29, 40, 0.86);
   box-shadow: 0 24px 90px rgba(0, 0, 0, 0.34);
+  overflow: hidden;
   padding: clamp(2rem, 8vw, 4rem);
 }
 
 .login-card h1 {
+  font-size: clamp(3rem, 10vw, 5.25rem);
   max-width: 620px;
 }
 
+.login-status,
 .login-note {
   color: var(--muted);
   margin: 1rem 0 0;
+}
+
+.login-status {
+  min-height: 1.5rem;
 }
 
 [hidden] {

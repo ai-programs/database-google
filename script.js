@@ -1,9 +1,11 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import {
   getAuth,
+  getRedirectResult,
   GoogleAuthProvider,
   onAuthStateChanged,
   signInWithPopup,
+  signInWithRedirect,
   signOut,
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import {
@@ -46,6 +48,7 @@ const resultsStatusEl = document.querySelector("#results-status");
 const watchlistEl = document.querySelector("#watchlist");
 const watchlistCountEl = document.querySelector("#watchlist-count");
 const authStatusEl = document.querySelector("#auth-status");
+const loginStatusEl = document.querySelector("#login-status");
 const loginButton = document.querySelector("#login-button");
 const logoutButton = document.querySelector("#logout-button");
 const friendSearchForm = document.querySelector("#friend-search-form");
@@ -66,12 +69,26 @@ let selectedFriendId = null;
 renderWatchlist();
 renderFriends();
 
+loginStatusEl.textContent = "Sign in to continue.";
+
+getRedirectResult(auth).catch((error) => {
+  loginStatusEl.textContent = getAuthErrorMessage(error);
+  loginButton.disabled = false;
+});
+
 loginButton.addEventListener("click", async () => {
   try {
     loginButton.disabled = true;
+    loginStatusEl.textContent = "Opening Google sign-in...";
     await signInWithPopup(auth, googleProvider);
   } catch (error) {
-    authStatusEl.textContent = "Google sign-in was cancelled or failed.";
+    if (error.code === "auth/popup-blocked" || error.code === "auth/popup-closed-by-user") {
+      loginStatusEl.textContent = "Redirecting to Google sign-in...";
+      await signInWithRedirect(auth, googleProvider);
+      return;
+    }
+
+    loginStatusEl.textContent = getAuthErrorMessage(error);
     loginButton.disabled = false;
   }
 });
@@ -88,6 +105,7 @@ onAuthStateChanged(auth, async (user) => {
     friends = [];
     selectedFriendId = null;
     loginButton.disabled = false;
+    loginStatusEl.textContent = "Sign in to continue.";
     loginView.hidden = false;
     appView.hidden = true;
     renderWatchlist();
@@ -665,6 +683,18 @@ function buildSearchTerms(displayName, email) {
   });
 
   return [...terms].filter(Boolean).slice(0, 120);
+}
+
+function getAuthErrorMessage(error) {
+  if (error.code === "auth/unauthorized-domain") {
+    return "This domain is not authorized in Firebase Authentication.";
+  }
+
+  if (error.code === "auth/popup-closed-by-user") {
+    return "Google sign-in was closed before it finished.";
+  }
+
+  return "Google sign-in failed. Check the browser console for details.";
 }
 
 function escapeHtml(value) {

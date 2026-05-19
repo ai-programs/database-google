@@ -11,6 +11,7 @@ import {
 import {
   collection,
   deleteDoc,
+  deleteField,
   doc,
   getDoc,
   getDocs,
@@ -68,6 +69,9 @@ const homeFriendsCountEl = document.querySelector("#home-friends-count");
 let currentUser = null;
 let watchlist = [];
 let friends = [];
+let friendships = [];
+let pendingRequests = [];
+let sentRequests = [];
 let selectedFriendId = null;
 
 renderWatchlist();
@@ -114,6 +118,9 @@ onAuthStateChanged(auth, async (user) => {
   if (!user) {
     watchlist = [];
     friends = [];
+    friendships = [];
+    pendingRequests = [];
+    sentRequests = [];
     selectedFriendId = null;
     loginButton.disabled = false;
     loginStatusEl.textContent = "Sign in to continue.";
@@ -130,7 +137,7 @@ onAuthStateChanged(auth, async (user) => {
   loginView.hidden = true;
   appView.hidden = false;
   showView("home");
-  authStatusEl.textContent = `Signed in as ${user.displayName || user.email}`;
+  authStatusEl.textContent = `Signed in as ${user.displayName || "Google account"}`;
   loginButton.disabled = false;
 
   try {
@@ -141,7 +148,7 @@ onAuthStateChanged(auth, async (user) => {
 
   watchlist = loadWatchlist();
   renderWatchlist();
-  await Promise.all([loadFirestoreWatchlist(), loadFriends()]);
+  await Promise.all([loadFirestoreWatchlist(), loadFriendships()]);
   refreshResultButtons();
 });
 
@@ -235,8 +242,8 @@ friendSearchResultsEl.addEventListener("click", async (event) => {
   try {
     button.disabled = true;
     button.textContent = "Adding...";
-    await addFriend(button.dataset.addFriendId);
-    friendSearchStatusEl.textContent = "Friend added.";
+    await sendFriendRequest(button.dataset.addFriendId);
+    friendSearchStatusEl.textContent = "Friend request sent.";
   } catch (error) {
     friendSearchStatusEl.textContent = error.message;
   }
@@ -245,6 +252,8 @@ friendSearchResultsEl.addEventListener("click", async (event) => {
 friendsListEl.addEventListener("click", async (event) => {
   const viewButton = event.target.closest("[data-view-friend-id]");
   const removeButton = event.target.closest("[data-remove-friend-id]");
+  const acceptButton = event.target.closest("[data-accept-request-id]");
+  const rejectButton = event.target.closest("[data-reject-request-id]");
 
   if (viewButton) {
     await viewFriendWatchlist(viewButton.dataset.viewFriendId);
@@ -252,6 +261,14 @@ friendsListEl.addEventListener("click", async (event) => {
 
   if (removeButton) {
     await removeFriend(removeButton.dataset.removeFriendId);
+  }
+
+  if (acceptButton) {
+    await acceptFriendRequest(acceptButton.dataset.acceptRequestId);
+  }
+
+  if (rejectButton) {
+    await rejectFriendRequest(rejectButton.dataset.rejectRequestId);
   }
 });
 
@@ -333,19 +350,21 @@ function renderWatchlist() {
 }
 
 async function saveUserProfile(user) {
-  const displayName = user.displayName || user.email || "Movie fan";
-  const email = user.email || "";
+  const displayName = user.displayName || "Movie fan";
+  const username = createUsername(displayName, user.uid);
 
   await setDoc(
     doc(db, "users", user.uid),
     {
       uid: user.uid,
       displayName,
-      email,
-      photoURL: user.photoURL || "",
+      username,
       displayNameLower: displayName.toLowerCase(),
-      emailLower: email.toLowerCase(),
-      searchTerms: buildSearchTerms(displayName, email),
+      usernameLower: username.toLowerCase(),
+      searchTerms: buildSearchTerms(displayName, username),
+      email: deleteField(),
+      emailLower: deleteField(),
+      photoURL: deleteField(),
       updatedAt: serverTimestamp(),
     },
     { merge: true },
@@ -442,38 +461,55 @@ function renderFriendSearchResults(users) {
 }
 
 function renderSearchPersonCard(user) {
-  const isFriend = friends.some((friend) => friend.uid === user.uid);
+  const friendship = getFriendshipWith(user.uid);
+  const buttonState = getFriendRequestButtonState(friendship);
 
   return `
     <article class="person-card">
       ${renderPersonMain(user)}
       <div class="person-actions">
         <button
-          class="${isFriend ? "secondary" : ""}"
+          class="${buttonState.disabled ? "secondary" : ""}"
           type="button"
           data-add-friend-id="${escapeAttribute(user.uid)}"
-          ${isFriend ? "disabled" : ""}
+          ${buttonState.disabled ? "disabled" : ""}
         >
-          ${isFriend ? "Added" : "Add friend"}
+          ${buttonState.label}
         </button>
       </div>
     </article>
   `;
 }
 
-async function loadFriends() {
+async function loadFriendships() {
   if (!currentUser) {
     return;
   }
 
   try {
-    const snapshot = await getDocs(collection(db, "users", currentUser.uid, "friends"));
-    friends = snapshot.docs
-      .map((friendDoc) => friendDoc.data())
-      .sort((firstFriend, secondFriend) => firstFriend.displayName.localeCompare(secondFriend.displayName));
+    const friendshipsQuery = query(
+      collection(db, "friendships"),
+      where("participants", "array-contains", currentUser.uid),
+    );
+    const snapshot = await getDocs(friendshipsQuery);
+
+    friendships = snapshot.docs.map((friendshipDoc) => ({
+      id: friendshipDoc.id,
+      ...friendshipDoc.data(),
+    }));
+    friends = friendships
+      .filter((friendship) => friendship.status === "accepted")
+      .map(getOtherFriendProfile)
+      .sort(sortByDisplayName);
+    pendingRequests = friendships.filter(
+      (friendship) => friendship.status === "pending" && friendship.recipientUid === currentUser.uid,
+    );
+    sentRequests = friendships.filter(
+      (friendship) => friendship.status === "pending" && friendship.requesterUid === currentUser.uid,
+    );
     renderFriends();
   } catch (error) {
-    friendsListEl.innerHTML = '<p class="empty-state">Could not load friends. Check your Firestore rules.</p>';
+    friendsListEl.innerHTML = '<p class="empty-state">Could not load friend requests. Check your Firestore rules.</p>';
   }
 }
 
@@ -481,14 +517,77 @@ function renderFriends() {
   friendsCountEl.textContent = `${friends.length} friend${friends.length === 1 ? "" : "s"} added`;
   homeFriendsCountEl.textContent = friends.length;
 
-  if (friends.length === 0) {
-    friendsListEl.innerHTML = '<p class="empty-state">Add a friend to compare watchlists.</p>';
+  if (friends.length === 0 && pendingRequests.length === 0 && sentRequests.length === 0) {
+    friendsListEl.innerHTML = '<p class="empty-state">Send or approve a friend request to compare watchlists.</p>';
     return;
   }
 
-  friendsListEl.innerHTML = friends
-    .map(
-      (friend) => `
+  friendsListEl.innerHTML = `
+    ${renderPendingRequests()}
+    ${renderSentRequests()}
+    ${renderAcceptedFriends()}
+  `;
+}
+
+function renderPendingRequests() {
+  if (pendingRequests.length === 0) {
+    return "";
+  }
+
+  return `
+    <div class="request-group">
+      <h3>Requests to approve</h3>
+      ${pendingRequests
+        .map((friendship) => {
+          const requester = friendship.requesterProfile;
+          return `
+            <article class="person-card">
+              ${renderPersonMain(requester)}
+              <div class="person-actions">
+                <button type="button" data-accept-request-id="${escapeAttribute(friendship.id)}">Approve</button>
+                <button class="secondary" type="button" data-reject-request-id="${escapeAttribute(friendship.id)}">Reject</button>
+              </div>
+            </article>
+          `;
+        })
+        .join("")}
+    </div>
+  `;
+}
+
+function renderSentRequests() {
+  if (sentRequests.length === 0) {
+    return "";
+  }
+
+  return `
+    <div class="request-group">
+      <h3>Requests sent</h3>
+      ${sentRequests
+        .map((friendship) => `
+          <article class="person-card">
+            ${renderPersonMain(friendship.recipientProfile)}
+            <div class="person-actions">
+              <button class="secondary" type="button" disabled>Pending</button>
+            </div>
+          </article>
+        `)
+        .join("")}
+    </div>
+  `;
+}
+
+function renderAcceptedFriends() {
+  if (friends.length === 0) {
+    return "";
+  }
+
+  return `
+    <div class="request-group">
+      <h3>Accepted friends</h3>
+      ${friends
+        .map(
+          (friend) => `
         <article class="person-card ${selectedFriendId === friend.uid ? "active" : ""}">
           ${renderPersonMain(friend)}
           <div class="person-actions">
@@ -497,13 +596,19 @@ function renderFriends() {
           </div>
         </article>
       `,
-    )
-    .join("");
+        )
+        .join("")}
+    </div>
+  `;
 }
 
-async function addFriend(friendUid) {
+async function sendFriendRequest(friendUid) {
   if (!currentUser) {
-    throw new Error("Sign in before adding friends.");
+    throw new Error("Sign in before sending friend requests.");
+  }
+
+  if (friendUid === currentUser.uid) {
+    throw new Error("You cannot add yourself as a friend.");
   }
 
   const friendSnapshot = await getDoc(doc(db, "users", friendUid));
@@ -513,19 +618,23 @@ async function addFriend(friendUid) {
   }
 
   const friend = friendSnapshot.data();
-  const friendData = {
-    uid: friend.uid,
-    displayName: friend.displayName,
-    email: friend.email,
-    photoURL: friend.photoURL || "",
-    addedAt: serverTimestamp(),
-  };
+  const friendshipId = getFriendshipId(currentUser.uid, friend.uid);
 
-  await setDoc(doc(db, "users", currentUser.uid, "friends", friend.uid), friendData);
-  friends = [friendData, ...friends.filter((savedFriend) => savedFriend.uid !== friend.uid)].sort(
-    (firstFriend, secondFriend) => firstFriend.displayName.localeCompare(secondFriend.displayName),
+  await setDoc(
+    doc(db, "friendships", friendshipId),
+    {
+      participants: [currentUser.uid, friend.uid].sort(),
+      requesterUid: currentUser.uid,
+      recipientUid: friend.uid,
+      requesterProfile: getCurrentUserPublicProfile(),
+      recipientProfile: getPublicProfile(friend),
+      status: "pending",
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true },
   );
-  renderFriends();
+  await loadFriendships();
 
   const searchTerm = friendSearchInput.value.trim().toLowerCase();
 
@@ -534,8 +643,46 @@ async function addFriend(friendUid) {
   }
 }
 
+async function acceptFriendRequest(friendshipId) {
+  const friendship = friendships.find((savedFriendship) => savedFriendship.id === friendshipId);
+
+  if (!friendship || friendship.recipientUid !== currentUser.uid) {
+    return;
+  }
+
+  await setDoc(
+    doc(db, "friendships", friendshipId),
+    {
+      status: "accepted",
+      acceptedAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true },
+  );
+  await loadFriendships();
+}
+
+async function rejectFriendRequest(friendshipId) {
+  const friendship = friendships.find((savedFriendship) => savedFriendship.id === friendshipId);
+
+  if (!friendship || friendship.recipientUid !== currentUser.uid) {
+    return;
+  }
+
+  await setDoc(
+    doc(db, "friendships", friendshipId),
+    {
+      status: "rejected",
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true },
+  );
+  await loadFriendships();
+}
+
 async function removeFriend(friendUid) {
-  await deleteDoc(doc(db, "users", currentUser.uid, "friends", friendUid));
+  await deleteDoc(doc(db, "friendships", getFriendshipId(currentUser.uid, friendUid)));
+  friendships = friendships.filter((friendship) => friendship.id !== getFriendshipId(currentUser.uid, friendUid));
   friends = friends.filter((friend) => friend.uid !== friendUid);
 
   if (selectedFriendId === friendUid) {
@@ -547,6 +694,11 @@ async function removeFriend(friendUid) {
 }
 
 async function viewFriendWatchlist(friendUid) {
+  if (!friends.some((savedFriend) => savedFriend.uid === friendUid)) {
+    friendWatchlistStatusEl.textContent = "Only accepted friends can share watchlists.";
+    return;
+  }
+
   const friend = friends.find((savedFriend) => savedFriend.uid === friendUid);
 
   if (!friend) {
@@ -659,18 +811,14 @@ function renderPersonMain(user) {
       ${renderAvatar(user)}
       <div class="person-details">
         <h3>${escapeHtml(user.displayName || "Movie fan")}</h3>
-        <p>${escapeHtml(user.email || "No email shared")}</p>
+        <p>@${escapeHtml(user.username || "movie-fan")}</p>
       </div>
     </div>
   `;
 }
 
 function renderAvatar(user) {
-  if (user.photoURL) {
-    return `<div class="avatar"><img src="${escapeAttribute(user.photoURL)}" alt="${escapeAttribute(user.displayName || "User")} avatar" /></div>`;
-  }
-
-  return `<div class="avatar">${escapeHtml((user.displayName || user.email || "?").charAt(0).toUpperCase())}</div>`;
+  return `<div class="avatar">${escapeHtml((user.displayName || user.username || "?").charAt(0).toUpperCase())}</div>`;
 }
 
 function loadWatchlist() {
@@ -697,9 +845,72 @@ function getWatchlistCollection(userId) {
   return collection(db, "users", userId, "watchlist");
 }
 
-function buildSearchTerms(displayName, email) {
+function getCurrentUserPublicProfile() {
+  const displayName = currentUser.displayName || "Movie fan";
+  const username = createUsername(displayName, currentUser.uid);
+
+  return {
+    uid: currentUser.uid,
+    displayName,
+    username,
+  };
+}
+
+function getPublicProfile(user) {
+  return {
+    uid: user.uid,
+    displayName: user.displayName || "Movie fan",
+    username: user.username || createUsername(user.displayName || "Movie fan", user.uid),
+  };
+}
+
+function getFriendshipWith(userId) {
+  return friendships.find((friendship) => friendship.participants.includes(userId));
+}
+
+function getFriendRequestButtonState(friendship) {
+  if (!friendship || friendship.status === "rejected") {
+    return { label: "Send request", disabled: false };
+  }
+
+  if (friendship.status === "accepted") {
+    return { label: "Friends", disabled: true };
+  }
+
+  if (friendship.requesterUid === currentUser.uid) {
+    return { label: "Request sent", disabled: true };
+  }
+
+  return { label: "Respond in Friends", disabled: true };
+}
+
+function getOtherFriendProfile(friendship) {
+  return friendship.requesterUid === currentUser.uid
+    ? friendship.recipientProfile
+    : friendship.requesterProfile;
+}
+
+function getFriendshipId(firstUid, secondUid) {
+  return [firstUid, secondUid].sort().join("_");
+}
+
+function sortByDisplayName(firstUser, secondUser) {
+  return firstUser.displayName.localeCompare(secondUser.displayName);
+}
+
+function createUsername(displayName, uid) {
+  const slug = displayName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 24);
+
+  return `${slug || "movie-fan"}-${uid.slice(0, 5).toLowerCase()}`;
+}
+
+function buildSearchTerms(displayName, username) {
   const terms = new Set();
-  const textParts = `${displayName} ${email}`.toLowerCase().split(/[^a-z0-9@.]+/);
+  const textParts = `${displayName} ${username}`.toLowerCase().split(/[^a-z0-9-]+/);
 
   textParts.forEach((part) => {
     for (let index = 1; index <= part.length; index += 1) {

@@ -443,6 +443,25 @@ h2 {
   margin-top: 1rem;
 }
 
+.request-group {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.request-group + .request-group {
+  border-top: 1px solid var(--border);
+  margin-top: 1rem;
+  padding-top: 1rem;
+}
+
+.request-group h3 {
+  color: var(--muted);
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
 .person-card {
   display: flex;
   align-items: center;

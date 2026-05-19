@@ -7,54 +7,107 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main class="app">
-      <section class="hero" aria-labelledby="page-title">
-        <div class="auth-card" id="auth-card">
-          <div>
-            <p class="auth-label">Account</p>
-            <p class="auth-status" id="auth-status">Checking sign-in...</p>
-          </div>
+    <main>
+      <section class="login-view" id="login-view" aria-labelledby="login-title">
+        <div class="login-card">
+          <p class="eyebrow">Movie Night</p>
+          <h1 id="login-title">Find films worth sharing</h1>
+          <p class="intro">
+            Search OMDb, save your watchlist, add friends, and compare the films
+            you both want to watch.
+          </p>
           <button type="button" id="login-button">Sign in with Google</button>
-          <button class="secondary" type="button" id="logout-button" hidden>Sign out</button>
+          <p class="login-note">Your watchlist is saved to your Google account.</p>
         </div>
-
-        <p class="eyebrow">OMDb Movie Finder</p>
-        <h1 id="page-title">Build your next watchlist</h1>
-        <p class="intro">
-          Search for a film, view the results, and save the ones you want to
-          watch later.
-        </p>
-
-        <form class="search-form" id="search-form">
-          <label class="sr-only" for="search-input">Search for a film</label>
-          <input
-            id="search-input"
-            name="search"
-            type="search"
-            placeholder="Try The Matrix, Dune, or Amelie"
-            autocomplete="off"
-            required
-          />
-          <button type="submit">Search</button>
-        </form>
       </section>
 
-      <section class="content-grid">
-        <section class="panel" aria-labelledby="results-title">
-          <div class="section-heading">
-            <h2 id="results-title">Search results</h2>
-            <p id="results-status">Search for a movie to begin.</p>
+      <section class="app" id="app-view" hidden>
+        <section class="hero" aria-labelledby="page-title">
+          <div class="auth-card" id="auth-card">
+            <div>
+              <p class="auth-label">Account</p>
+              <p class="auth-status" id="auth-status">Checking sign-in...</p>
+            </div>
+            <button class="secondary" type="button" id="logout-button">Sign out</button>
           </div>
-          <div class="movie-grid" id="results"></div>
+
+          <p class="eyebrow">OMDb Movie Finder</p>
+          <h1 id="page-title">Build your next watchlist</h1>
+          <p class="intro">
+            Search for a film, view the results, and save the ones you want to
+            watch later.
+          </p>
+
+          <form class="search-form" id="search-form">
+            <label class="sr-only" for="search-input">Search for a film</label>
+            <input
+              id="search-input"
+              name="search"
+              type="search"
+              placeholder="Try The Matrix, Dune, or Amelie"
+              autocomplete="off"
+              required
+            />
+            <button type="submit">Search</button>
+          </form>
         </section>
 
-        <aside class="panel watchlist-panel" aria-labelledby="watchlist-title">
-          <div class="section-heading">
-            <h2 id="watchlist-title">Watchlist</h2>
-            <p id="watchlist-count">0 films saved</p>
-          </div>
-          <div class="watchlist" id="watchlist"></div>
-        </aside>
+        <section class="content-grid">
+          <section class="panel" aria-labelledby="results-title">
+            <div class="section-heading">
+              <h2 id="results-title">Search results</h2>
+              <p id="results-status">Search for a movie to begin.</p>
+            </div>
+            <div class="movie-grid" id="results"></div>
+          </section>
+
+          <aside class="panel watchlist-panel" aria-labelledby="watchlist-title">
+            <div class="section-heading">
+              <h2 id="watchlist-title">Watchlist</h2>
+              <p id="watchlist-count">0 films saved</p>
+            </div>
+            <div class="watchlist" id="watchlist"></div>
+          </aside>
+        </section>
+
+        <section class="social-grid">
+          <section class="panel" aria-labelledby="friends-title">
+            <div class="section-heading">
+              <h2 id="friends-title">Find friends</h2>
+              <p id="friend-search-status">Search by name or email.</p>
+            </div>
+            <form class="search-form compact" id="friend-search-form">
+              <label class="sr-only" for="friend-search-input">Search users</label>
+              <input
+                id="friend-search-input"
+                name="friend-search"
+                type="search"
+                placeholder="Search users"
+                autocomplete="off"
+                required
+              />
+              <button type="submit">Find</button>
+            </form>
+            <div class="people-list" id="friend-search-results"></div>
+          </section>
+
+          <section class="panel" aria-labelledby="my-friends-title">
+            <div class="section-heading">
+              <h2 id="my-friends-title">Friends</h2>
+              <p id="friends-count">0 friends added</p>
+            </div>
+            <div class="people-list" id="friends-list"></div>
+          </section>
+
+          <section class="panel friend-watchlist-panel" aria-labelledby="friend-watchlist-title">
+            <div class="section-heading">
+              <h2 id="friend-watchlist-title">Friend watchlist</h2>
+              <p id="friend-watchlist-status">Choose a friend to compare watchlists.</p>
+            </div>
+            <div class="comparison-summary" id="comparison-summary"></div>
+            <div class="movie-grid" id="friend-watchlist"></div>
+          </section>
+        </section>
       </section>
     </main>
 

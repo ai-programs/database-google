@@ -71,6 +71,35 @@ button:disabled {
   padding: 3rem 0;
 }
 
+.login-view {
+  display: grid;
+  min-height: 100vh;
+  padding: 1rem;
+  place-items: center;
+}
+
+.login-card {
+  width: min(720px, 100%);
+  border: 1px solid var(--border);
+  border-radius: 34px;
+  background: rgba(24, 29, 40, 0.86);
+  box-shadow: 0 24px 90px rgba(0, 0, 0, 0.34);
+  padding: clamp(2rem, 8vw, 4rem);
+}
+
+.login-card h1 {
+  max-width: 620px;
+}
+
+.login-note {
+  color: var(--muted);
+  margin: 1rem 0 0;
+}
+
+[hidden] {
+  display: none !important;
+}
+
 .hero {
   padding: clamp(2rem, 8vw, 5rem) 0 2rem;
 }
@@ -159,11 +188,27 @@ h2 {
   box-shadow: 0 0 0 4px rgba(246, 180, 75, 0.16);
 }
 
+.search-form.compact {
+  margin-top: 0;
+  max-width: none;
+}
+
 .content-grid {
   display: grid;
   gap: 1rem;
   grid-template-columns: minmax(0, 1fr) 360px;
   align-items: start;
+}
+
+.social-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 1rem;
+}
+
+.friend-watchlist-panel {
+  grid-column: 1 / -1;
 }
 
 .panel {
@@ -186,7 +231,8 @@ h2 {
 }
 
 .movie-grid,
-.watchlist {
+.watchlist,
+.people-list {
   display: grid;
   gap: 1rem;
 }
@@ -196,7 +242,9 @@ h2 {
 }
 
 .movie-card,
-.watchlist-item {
+.watchlist-item,
+.person-card,
+.comparison-summary {
   border: 1px solid var(--border);
   border-radius: 22px;
   background: var(--panel-soft);
@@ -285,6 +333,86 @@ h2 {
   text-align: center;
 }
 
+.people-list {
+  margin-top: 1rem;
+}
+
+.person-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem;
+}
+
+.person-card.active {
+  border-color: rgba(246, 180, 75, 0.8);
+}
+
+.person-main {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  min-width: 0;
+}
+
+.avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #1c1204;
+  display: grid;
+  flex: 0 0 auto;
+  font-weight: 900;
+  place-items: center;
+  overflow: hidden;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.person-details {
+  min-width: 0;
+}
+
+.person-details h3 {
+  font-size: 1rem;
+  margin: 0 0 0.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.person-details p,
+.comparison-summary p {
+  color: var(--muted);
+  margin: 0;
+}
+
+.person-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.person-actions button {
+  padding: 0.55rem 0.8rem;
+}
+
+.comparison-summary {
+  margin-bottom: 1rem;
+  padding: 1rem;
+}
+
+.comparison-summary h3 {
+  margin: 0 0 0.4rem;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -299,6 +427,10 @@ h2 {
 
 @media (max-width: 860px) {
   .content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .social-grid {
     grid-template-columns: 1fr;
   }
 
@@ -320,6 +452,19 @@ h2 {
   .auth-card {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .person-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .person-actions {
+    justify-content: stretch;
+  }
+
+  .person-actions button {
+    width: 100%;
   }
 
   .panel {

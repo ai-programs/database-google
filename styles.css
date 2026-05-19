@@ -68,7 +68,7 @@ button:disabled {
 .app {
   width: min(1180px, calc(100% - 2rem));
   margin: 0 auto;
-  padding: 3rem 0;
+  padding: 1.25rem 0 3rem;
 }
 
 .login-view {
@@ -107,21 +107,121 @@ button:disabled {
   display: none !important;
 }
 
-.hero {
-  padding: clamp(2rem, 8vw, 5rem) 0 2rem;
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: grid;
+  align-items: center;
+  gap: 1rem;
+  grid-template-columns: auto 1fr auto;
+  border: 1px solid var(--border);
+  border-radius: 26px;
+  background: rgba(16, 19, 26, 0.84);
+  backdrop-filter: blur(18px);
+  margin-bottom: 1.25rem;
+  padding: 0.75rem;
 }
 
-.auth-card {
+.brand {
+  background: transparent;
+  color: var(--text);
+  letter-spacing: -0.04em;
+  padding: 0.65rem 0.8rem;
+}
+
+.brand:hover,
+.brand:focus-visible {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.app-nav {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  width: min(100%, 680px);
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.nav-button,
+button.small {
+  padding: 0.6rem 0.85rem;
+}
+
+.nav-button {
+  background: transparent;
+  color: var(--muted);
+}
+
+.nav-button:hover,
+.nav-button:focus-visible,
+.nav-button.active {
+  background: var(--panel-soft);
+  color: var(--text);
+}
+
+.account-menu {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.app-view {
+  display: none;
+}
+
+.app-view.active {
+  display: block;
+}
+
+.welcome-panel,
+.page-heading {
   border: 1px solid var(--border);
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.08);
-  margin-bottom: 2rem;
-  padding: 0.85rem;
+  border-radius: 34px;
+  background:
+    linear-gradient(135deg, rgba(246, 180, 75, 0.16), transparent 40%),
+    rgba(24, 29, 40, 0.76);
+  margin-bottom: 1rem;
+  padding: clamp(1.5rem, 5vw, 3rem);
+}
+
+.welcome-panel h1,
+.page-heading h1 {
+  font-size: clamp(2.4rem, 8vw, 5rem);
+  max-width: 760px;
+}
+
+.quick-actions,
+.dashboard-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.quick-actions {
+  margin-top: 1.5rem;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.stat-card {
+  border: 1px solid var(--border);
+  border-radius: 26px;
+  background: rgba(24, 29, 40, 0.82);
+  padding: 1.25rem;
+}
+
+.stat-number {
+  display: block;
+  color: var(--accent);
+  font-size: 3rem;
+  font-weight: 900;
+  letter-spacing: -0.08em;
+  line-height: 1;
 }
 
 .auth-label {
@@ -135,7 +235,11 @@ button:disabled {
 
 .auth-status {
   color: var(--muted);
+  font-size: 0.9rem;
   margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .eyebrow {
@@ -176,7 +280,7 @@ h2 {
 .search-form {
   display: flex;
   gap: 0.75rem;
-  margin-top: 2rem;
+  margin: 0 0 1rem;
   max-width: 680px;
 }
 
@@ -198,13 +302,6 @@ h2 {
 .search-form.compact {
   margin-top: 0;
   max-width: none;
-}
-
-.content-grid {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: minmax(0, 1fr) 360px;
-  align-items: start;
 }
 
 .social-grid {
@@ -433,16 +530,22 @@ h2 {
 }
 
 @media (max-width: 860px) {
-  .content-grid {
+  .topbar {
     grid-template-columns: 1fr;
+  }
+
+  .app-nav,
+  .account-menu {
+    justify-content: flex-start;
+  }
+
+  .app-nav {
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
   }
 
   .social-grid {
     grid-template-columns: 1fr;
-  }
-
-  .watchlist-panel {
-    order: -1;
   }
 }
 
@@ -456,9 +559,15 @@ h2 {
     flex-direction: column;
   }
 
-  .auth-card {
-    align-items: stretch;
+  .account-menu,
+  .dashboard-grid,
+  .quick-actions {
     flex-direction: column;
+    align-items: stretch;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
   }
 
   .person-card {

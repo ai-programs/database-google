@@ -41,6 +41,8 @@ const googleProvider = new GoogleAuthProvider();
 
 const loginView = document.querySelector("#login-view");
 const appView = document.querySelector("#app-view");
+const appViews = document.querySelectorAll("[data-view]");
+const viewButtons = document.querySelectorAll("[data-view-target]");
 const searchForm = document.querySelector("#search-form");
 const searchInput = document.querySelector("#search-input");
 const resultsEl = document.querySelector("#results");
@@ -60,6 +62,8 @@ const friendsCountEl = document.querySelector("#friends-count");
 const friendWatchlistEl = document.querySelector("#friend-watchlist");
 const friendWatchlistStatusEl = document.querySelector("#friend-watchlist-status");
 const comparisonSummaryEl = document.querySelector("#comparison-summary");
+const homeWatchlistCountEl = document.querySelector("#home-watchlist-count");
+const homeFriendsCountEl = document.querySelector("#home-friends-count");
 
 let currentUser = null;
 let watchlist = [];
@@ -68,6 +72,7 @@ let selectedFriendId = null;
 
 renderWatchlist();
 renderFriends();
+showView("home");
 
 loginStatusEl.textContent = "Sign in to continue.";
 
@@ -97,6 +102,12 @@ logoutButton.addEventListener("click", async () => {
   await signOut(auth);
 });
 
+viewButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    showView(button.dataset.viewTarget);
+  });
+});
+
 onAuthStateChanged(auth, async (user) => {
   currentUser = user;
 
@@ -108,6 +119,7 @@ onAuthStateChanged(auth, async (user) => {
     loginStatusEl.textContent = "Sign in to continue.";
     loginView.hidden = false;
     appView.hidden = true;
+    showView("home");
     renderWatchlist();
     renderFriends();
     clearFriendComparison();
@@ -117,6 +129,7 @@ onAuthStateChanged(auth, async (user) => {
 
   loginView.hidden = true;
   appView.hidden = false;
+  showView("home");
   authStatusEl.textContent = `Signed in as ${user.displayName || user.email}`;
   loginButton.disabled = false;
 
@@ -294,6 +307,7 @@ function renderMovieCard(movie) {
 
 function renderWatchlist() {
   watchlistCountEl.textContent = `${watchlist.length} film${watchlist.length === 1 ? "" : "s"} saved`;
+  homeWatchlistCountEl.textContent = watchlist.length;
 
   if (watchlist.length === 0) {
     watchlistEl.innerHTML = '<p class="empty-state">Your saved films will appear here.</p>';
@@ -465,6 +479,7 @@ async function loadFriends() {
 
 function renderFriends() {
   friendsCountEl.textContent = `${friends.length} friend${friends.length === 1 ? "" : "s"} added`;
+  homeFriendsCountEl.textContent = friends.length;
 
   if (friends.length === 0) {
     friendsListEl.innerHTML = '<p class="empty-state">Add a friend to compare watchlists.</p>';
@@ -601,6 +616,16 @@ function clearFriendComparison() {
   friendWatchlistStatusEl.textContent = "Choose a friend to compare watchlists.";
   comparisonSummaryEl.innerHTML = "";
   friendWatchlistEl.innerHTML = "";
+}
+
+function showView(viewName) {
+  appViews.forEach((view) => {
+    view.classList.toggle("active", view.dataset.view === viewName);
+  });
+
+  viewButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.viewTarget === viewName);
+  });
 }
 
 function renderResultsButtonState(button, isSaved) {

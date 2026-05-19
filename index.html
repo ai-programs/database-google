@@ -23,22 +23,52 @@
       </section>
 
       <section class="app" id="app-view" hidden>
-        <section class="hero" aria-labelledby="page-title">
-          <div class="auth-card" id="auth-card">
-            <div>
-              <p class="auth-label">Account</p>
-              <p class="auth-status" id="auth-status">Checking sign-in...</p>
-            </div>
-            <button class="secondary" type="button" id="logout-button">Sign out</button>
+        <header class="topbar">
+          <button class="brand" type="button" data-view-target="home">Movie Night</button>
+          <nav class="app-nav" aria-label="Main navigation">
+            <button class="nav-button active" type="button" data-view-target="home">Home</button>
+            <button class="nav-button" type="button" data-view-target="search">Search</button>
+            <button class="nav-button" type="button" data-view-target="watchlist">Watchlist</button>
+            <button class="nav-button" type="button" data-view-target="friends">Friends</button>
+          </nav>
+          <div class="account-menu">
+            <span class="auth-status" id="auth-status">Checking sign-in...</span>
+            <button class="secondary small" type="button" id="logout-button">Sign out</button>
           </div>
+        </header>
 
-          <p class="eyebrow">OMDb Movie Finder</p>
-          <h1 id="page-title">Build your next watchlist</h1>
-          <p class="intro">
-            Search for a film, view the results, and save the ones you want to
-            watch later.
-          </p>
+        <section class="app-view active" id="home-section" data-view="home" aria-labelledby="home-title">
+          <div class="welcome-panel">
+            <p class="eyebrow">Welcome Back</p>
+            <h1 id="home-title">What are we watching next?</h1>
+            <p class="intro">
+              Search for films, keep your own watchlist tidy, and compare picks
+              with friends when movie night needs a shortlist.
+            </p>
+            <div class="quick-actions">
+              <button type="button" data-view-target="search">Find a film</button>
+              <button class="secondary" type="button" data-view-target="watchlist">Open watchlist</button>
+              <button class="secondary" type="button" data-view-target="friends">Find friends</button>
+            </div>
+          </div>
+          <div class="dashboard-grid">
+            <article class="stat-card">
+              <span class="stat-number" id="home-watchlist-count">0</span>
+              <p>films in your watchlist</p>
+            </article>
+            <article class="stat-card">
+              <span class="stat-number" id="home-friends-count">0</span>
+              <p>friends added</p>
+            </article>
+          </div>
+        </section>
 
+        <section class="app-view" id="search-section" data-view="search" aria-labelledby="page-title">
+          <div class="page-heading">
+            <p class="eyebrow">OMDb Movie Finder</p>
+            <h1 id="page-title">Search films</h1>
+            <p class="intro">Find a movie and add it to your watchlist.</p>
+          </div>
           <form class="search-form" id="search-form">
             <label class="sr-only" for="search-input">Search for a film</label>
             <input
@@ -51,9 +81,6 @@
             />
             <button type="submit">Search</button>
           </form>
-        </section>
-
-        <section class="content-grid">
           <section class="panel" aria-labelledby="results-title">
             <div class="section-heading">
               <h2 id="results-title">Search results</h2>
@@ -61,53 +88,67 @@
             </div>
             <div class="movie-grid" id="results"></div>
           </section>
+        </section>
 
-          <aside class="panel watchlist-panel" aria-labelledby="watchlist-title">
+        <section class="app-view" id="watchlist-section" data-view="watchlist" aria-labelledby="watchlist-title">
+          <div class="page-heading">
+            <p class="eyebrow">Your List</p>
+            <h1 id="watchlist-title">My watchlist</h1>
+            <p class="intro">Everything you have saved for later.</p>
+          </div>
+          <section class="panel" aria-labelledby="watchlist-title">
             <div class="section-heading">
-              <h2 id="watchlist-title">Watchlist</h2>
+              <h2>Saved films</h2>
               <p id="watchlist-count">0 films saved</p>
             </div>
             <div class="watchlist" id="watchlist"></div>
-          </aside>
+          </section>
         </section>
 
-        <section class="social-grid">
-          <section class="panel" aria-labelledby="friends-title">
-            <div class="section-heading">
-              <h2 id="friends-title">Find friends</h2>
-              <p id="friend-search-status">Search by name or email.</p>
-            </div>
-            <form class="search-form compact" id="friend-search-form">
-              <label class="sr-only" for="friend-search-input">Search users</label>
-              <input
-                id="friend-search-input"
-                name="friend-search"
-                type="search"
-                placeholder="Search users"
-                autocomplete="off"
-                required
-              />
-              <button type="submit">Find</button>
-            </form>
-            <div class="people-list" id="friend-search-results"></div>
-          </section>
+        <section class="app-view" id="friends-section" data-view="friends" aria-labelledby="friends-page-title">
+          <div class="page-heading">
+            <p class="eyebrow">Social</p>
+            <h1 id="friends-page-title">Friends</h1>
+            <p class="intro">Find people, open their watchlists, and see what you both saved.</p>
+          </div>
+          <div class="social-grid">
+            <section class="panel" aria-labelledby="friends-title">
+              <div class="section-heading">
+                <h2 id="friends-title">Find friends</h2>
+                <p id="friend-search-status">Search by name or email.</p>
+              </div>
+              <form class="search-form compact" id="friend-search-form">
+                <label class="sr-only" for="friend-search-input">Search users</label>
+                <input
+                  id="friend-search-input"
+                  name="friend-search"
+                  type="search"
+                  placeholder="Search users"
+                  autocomplete="off"
+                  required
+                />
+                <button type="submit">Find</button>
+              </form>
+              <div class="people-list" id="friend-search-results"></div>
+            </section>
 
-          <section class="panel" aria-labelledby="my-friends-title">
-            <div class="section-heading">
-              <h2 id="my-friends-title">Friends</h2>
-              <p id="friends-count">0 friends added</p>
-            </div>
-            <div class="people-list" id="friends-list"></div>
-          </section>
+            <section class="panel" aria-labelledby="my-friends-title">
+              <div class="section-heading">
+                <h2 id="my-friends-title">Your friends</h2>
+                <p id="friends-count">0 friends added</p>
+              </div>
+              <div class="people-list" id="friends-list"></div>
+            </section>
 
-          <section class="panel friend-watchlist-panel" aria-labelledby="friend-watchlist-title">
-            <div class="section-heading">
-              <h2 id="friend-watchlist-title">Friend watchlist</h2>
-              <p id="friend-watchlist-status">Choose a friend to compare watchlists.</p>
-            </div>
-            <div class="comparison-summary" id="comparison-summary"></div>
-            <div class="movie-grid" id="friend-watchlist"></div>
-          </section>
+            <section class="panel friend-watchlist-panel" aria-labelledby="friend-watchlist-title">
+              <div class="section-heading">
+                <h2 id="friend-watchlist-title">Friend watchlist</h2>
+                <p id="friend-watchlist-status">Choose a friend to compare watchlists.</p>
+              </div>
+              <div class="comparison-summary" id="comparison-summary"></div>
+              <div class="movie-grid" id="friend-watchlist"></div>
+            </section>
+          </div>
         </section>
       </section>
     </main>

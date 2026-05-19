@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Movie Watchlist</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="hero" aria-labelledby="page-title">
+        <div class="auth-card" id="auth-card">
+          <div>
+            <p class="auth-label">Account</p>
+            <p class="auth-status" id="auth-status">Checking sign-in...</p>
+          </div>
+          <button type="button" id="login-button">Sign in with Google</button>
+          <button class="secondary" type="button" id="logout-button" hidden>Sign out</button>
+        </div>
+
+        <p class="eyebrow">OMDb Movie Finder</p>
+        <h1 id="page-title">Build your next watchlist</h1>
+        <p class="intro">
+          Search for a film, view the results, and save the ones you want to
+          watch later.
+        </p>
+
+        <form class="search-form" id="search-form">
+          <label class="sr-only" for="search-input">Search for a film</label>
+          <input
+            id="search-input"
+            name="search"
+            type="search"
+            placeholder="Try The Matrix, Dune, or Amelie"
+            autocomplete="off"
+            required
+          />
+          <button type="submit">Search</button>
+        </form>
+      </section>
+
+      <section class="content-grid">
+        <section class="panel" aria-labelledby="results-title">
+          <div class="section-heading">
+            <h2 id="results-title">Search results</h2>
+            <p id="results-status">Search for a movie to begin.</p>
+          </div>
+          <div class="movie-grid" id="results"></div>
+        </section>
+
+        <aside class="panel watchlist-panel" aria-labelledby="watchlist-title">
+          <div class="section-heading">
+            <h2 id="watchlist-title">Watchlist</h2>
+            <p id="watchlist-count">0 films saved</p>
+          </div>
+          <div class="watchlist" id="watchlist"></div>
+        </aside>
+      </section>
+    </main>
+
+    <script type="module" src="script.js"></script>
+  </body>
+</html>
